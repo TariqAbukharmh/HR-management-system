@@ -2,13 +2,13 @@
 
 var employees = [];
 
-function Employee(empID, fullName, department, level, image) {
+function Employee(empID, fullName, department, level, image, salary) {
         this.empID = empID,
         this.fullName = fullName,
         this.department = department,
         this.level = level,
         this.image = image,
-        this.salary = 0
+        this.salary = salary
 }
 
 Employee.prototype.calculateNetSalary = function () {
@@ -31,14 +31,14 @@ Employee.prototype.calculateNetSalary = function () {
 
 Employee.prototype.render = function () {
 
-    // get this members container
+    // get the members container
     let members = document.getElementById('members-container');
 
     // create a card for the employee
     let card = document.createElement("div");
     card.classList.add("team-member");
 
-    // create profile-pic for the employee
+    // add profile-pic for the employee
     let imgElement = document.createElement("img");
     imgElement.classList.add("profile-pic");
     imgElement.setAttribute("src", this.image);
@@ -73,7 +73,6 @@ Employee.prototype.render = function () {
     members.appendChild(card);
 }
 
-
 document.getElementById('submit-btn').addEventListener("click", function () {
 
     let full_name = document.getElementById('name');
@@ -87,13 +86,13 @@ document.getElementById('submit-btn').addEventListener("click", function () {
     }
 
     let empId = getUniqueRandomID();
-
     let newEmp = new Employee(empId, full_name.value, department.value,level.value,image.value );
     newEmp.calculateNetSalary();
 
-    newEmp.render();
+    saveEmployee(newEmp);
 
-    employees.push(newEmp);
+    renderFromStorage();
+
 });
 
 function getRandomNumberBetween(min, max) {
@@ -114,16 +113,94 @@ function getUniqueRandomID() {
     return id;
 }
 
-// render some emps
-function addEmployee(emp){
-    emp.calculateNetSalary();
-    emp.render();
-    employees.push(emp);
+function saveEmployee(emp){
+    
+    var getEmployees = localStorage.getItem('Employees')
+
+    if(getEmployees != null){
+        employees = JSON.parse(getEmployees);
+        employees.push(emp);
+
+        let myEmployees = JSON.stringify(employees);
+        localStorage.setItem("Employees", myEmployees);
+    }
+
 }
 
-addEmployee(new Employee(getUniqueRandomID(), "Lana Ali", "Finance","Senior", "pics/Lana.png"));
-addEmployee(new Employee(getUniqueRandomID(), "Tamara Ayoub", "Marketing","Senior", "pics/Tamara.png"));
-addEmployee(new Employee(getUniqueRandomID(), "Omar Zaid", "Development","Senior", "pics/Omar.png"));
-addEmployee(new Employee(getUniqueRandomID(), "Rana Saleh", "Development","Junior", "pics/Rana.png"));
-addEmployee(new Employee(getUniqueRandomID(), "Hadi Ahmad", "Finance","Mid-Senior", "pics/Hadi.png"));
+function renderFromStorage(){
+
+    let generatedEmps = [];
+
+    var getJson = localStorage.getItem('Employees')
+
+    if(getJson != null){
+        generatedEmps = JSON.parse(getJson);
+        for(let i = 0; i < generatedEmps.length; i++){
+
+            let emp = new Employee(
+                generatedEmps[i].empID,
+                generatedEmps[i].fullName,
+                generatedEmps[i].department,
+                generatedEmps[i].level,
+                generatedEmps[i].image,
+                generatedEmps[i].salary
+            );
+
+            emp.render();
+        }
+    }
+    else{
+        // this code will excute just once in browser life, to render default employees
+        let myEmps = JSON.stringify(employees);
+        localStorage.setItem("Employees", myEmps);
+        renderFromStorage();
+    }
+}
+
+// default employees
+let lana = new Employee(1002, "Lana Ali", "Finance","Senior", "assets/Lana.png");
+let tamara = new Employee(1003, "Tamara Ayoub", "Marketing","Senior", "assets/Tamara.png");
+let omar = new Employee(1005, "Omar Zaid", "Development","Senior", "assets/Omar.png");
+let rana = new Employee(1006, "Rana Saleh", "Development","Junior", "assets/Rana.png");
+let hadi = new Employee(1007, "Hadi Ahmad", "Finance","Mid-Senior", "assets/Hadi.png");
+
+
+lana.calculateNetSalary();
+tamara.calculateNetSalary();
+rana.calculateNetSalary();
+hadi.calculateNetSalary();
+omar.calculateNetSalary();
+
+
+
+employees.push(lana);
+employees.push(tamara);
+employees.push(rana);
+employees.push(hadi);
+employees.push(omar);
+
+
+
+renderFromStorage();
+
+
+//  manipulation
+let displayForm = false;
+document.getElementById("add-btn").addEventListener("click", function(){
+
+    let form = document.getElementById('new-emp-form');
+    if(displayForm){
+        form.style.display = "none";
+        this.innerHTML = "Add New Employee";
+        this.style.backgroundColor = "#072227";
+        displayForm = false;
+    }
+    else{
+        form.style.display = "inline-block";
+        this.innerHTML = "Cancel";
+        this.style.backgroundColor = "red";
+        displayForm = true;
+    }
+    
+}); 
 
